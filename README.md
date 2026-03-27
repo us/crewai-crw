@@ -1,5 +1,9 @@
 # crewai-crw
 
+[![PyPI version](https://img.shields.io/pypi/v/crewai-crw)](https://pypi.org/project/crewai-crw/)
+[![Python](https://img.shields.io/pypi/pyversions/crewai-crw)](https://pypi.org/project/crewai-crw/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scrape, crawl, and map websites with AI agents.
 
 [CRW](https://github.com/us/crw) is an open-source web scraper built for AI agents. Single Rust binary, ~6 MB idle RAM, Firecrawl-compatible API.
@@ -8,6 +12,8 @@ CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scr
 
 ```bash
 pip install crewai-crw
+# or
+uv add crewai-crw
 ```
 
 You also need a CRW backend — either self-hosted or cloud:
@@ -79,6 +85,14 @@ crawl_tool = CrwCrawlWebsiteTool(
         "onlyMainContent": True,
     }
 )
+
+# Use in an agent
+researcher = Agent(
+    role="Deep Researcher",
+    goal="Crawl documentation sites and extract comprehensive information",
+    backstory="Expert at gathering information across multiple pages",
+    tools=[crawl_tool],
+)
 ```
 
 ### Discover all URLs on a site
@@ -87,6 +101,14 @@ crawl_tool = CrwCrawlWebsiteTool(
 from crewai_crw import CrwMapWebsiteTool
 
 map_tool = CrwMapWebsiteTool()
+
+# Use in an agent
+mapper = Agent(
+    role="Site Mapper",
+    goal="Discover and catalog all pages on a website",
+    backstory="Expert at understanding website structure",
+    tools=[map_tool],
+)
 ```
 
 ## Configuration
