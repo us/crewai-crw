@@ -2,7 +2,7 @@
 
 CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scrape, crawl, and map websites with AI agents.
 
-[CRW](https://github.com/crw-project/crw) is an open-source web scraper built for AI agents. Single Rust binary, ~6 MB idle RAM, Firecrawl-compatible API.
+[CRW](https://github.com/us/crw) is an open-source web scraper built for AI agents. Single Rust binary, ~6 MB idle RAM, Firecrawl-compatible API.
 
 ## Installation
 
@@ -10,14 +10,20 @@ CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scr
 pip install crewai-crw
 ```
 
-You also need a running CRW instance:
+You also need a CRW backend — either self-hosted or cloud:
+
+**Option A: Self-hosted (free)**
 
 ```bash
-# Self-hosted (free)
-curl -fsSL https://raw.githubusercontent.com/crw-project/crw/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | bash
 crw  # starts on http://localhost:3000
+```
 
-# Or use the managed cloud at https://fastcrw.com
+**Option B: Cloud ([fastcrw.com](https://fastcrw.com))**
+
+```bash
+export CRW_API_URL=https://fastcrw.com/api
+export CRW_API_KEY=your_api_key
 ```
 
 ## Tools
@@ -95,7 +101,17 @@ map_tool = CrwMapWebsiteTool()
 
 ### Environment Variables
 
-Both `CRW_API_URL` and `CRW_API_KEY` can be set via environment variables as fallbacks.
+Both `CRW_API_URL` and `CRW_API_KEY` can be set via environment variables as fallbacks:
+
+```bash
+export CRW_API_URL=https://fastcrw.com/api  # or http://localhost:3000
+export CRW_API_KEY=your_api_key              # required for cloud, optional for self-hosted
+```
+
+```python
+# With env vars set, no constructor args needed:
+tool = CrwScrapeWebsiteTool()
+```
 
 ### Scrape Config
 
