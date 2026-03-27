@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/us/crewai-crw/compare/v0.1.0...v0.1.1) (2026-03-27)
+
+
+### Documentation
+
+* rewrite README with clear self-hosted vs cloud setup sections ([9be2e28](https://github.com/us/crewai-crw/commit/9be2e28121419661c14f58ca649e6fe0f640ea41))
+
 ## 0.1.0 (2026-03-27)
 
 
