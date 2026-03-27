@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "CRW web scraping tools for CrewAI — scrape, crawl, and map websites"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [{ name = "CRW Project", email = "hello@fastcrw.com" }]
 keywords = ["crewai", "crw", "web-scraping", "ai-agents", "mcp"]
 classifiers = [
@@ -16,7 +16,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
