@@ -11,25 +11,58 @@ CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scr
 ## Installation
 
 ```bash
-pip install crewai-crw
+pip install crewai crewai-crw
 # or
-uv add crewai-crw
+uv add crewai crewai-crw
 ```
 
-You also need a CRW backend — either self-hosted or cloud:
+## Setup — Pick One
 
-**Option A: Self-hosted (free)**
+### Option A: Self-hosted (free)
+
+Run CRW on your own machine. No API key, no account, no limits.
 
 ```bash
+# Install CRW
 curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | bash
-crw  # starts on http://localhost:3000
+
+# Start the server (runs on http://localhost:3000)
+crw
+
+# Or use Docker
+docker run -p 3000:3000 ghcr.io/us/crw:latest
 ```
 
-**Option B: Cloud ([fastcrw.com](https://fastcrw.com))**
+```python
+from crewai_crw import CrwScrapeWebsiteTool
+
+# No api_key needed — tools auto-connect to localhost:3000
+scrape_tool = CrwScrapeWebsiteTool()
+```
+
+### Option B: Cloud ([fastcrw.com](https://fastcrw.com))
+
+No server to run. Get an API key from [fastcrw.com](https://fastcrw.com) and start scraping.
+
+```python
+from crewai_crw import CrwScrapeWebsiteTool
+
+scrape_tool = CrwScrapeWebsiteTool(
+    api_url="https://fastcrw.com/api",
+    api_key="crw_live_...",  # get yours at fastcrw.com
+)
+```
+
+**Tip:** Set environment variables so you don't have to pass them every time:
 
 ```bash
 export CRW_API_URL=https://fastcrw.com/api
-export CRW_API_KEY=your_api_key
+export CRW_API_KEY=crw_live_...
+```
+
+```python
+# With env vars set, no constructor args needed
+scrape_tool = CrwScrapeWebsiteTool()  # picks up from env automatically
 ```
 
 ## Tools
@@ -46,14 +79,9 @@ export CRW_API_KEY=your_api_key
 from crewai import Agent, Task, Crew
 from crewai_crw import CrwScrapeWebsiteTool
 
-# Self-hosted (default: localhost:3000)
+# Self-hosted: no args needed (connects to localhost:3000)
+# Cloud: CrwScrapeWebsiteTool(api_url="https://fastcrw.com/api", api_key="crw_live_...")
 scrape_tool = CrwScrapeWebsiteTool()
-
-# Or use the cloud
-scrape_tool = CrwScrapeWebsiteTool(
-    api_url="https://fastcrw.com/api",
-    api_key="YOUR_KEY",
-)
 
 researcher = Agent(
     role="Web Researcher",
