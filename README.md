@@ -22,45 +22,40 @@ uv add crewai crewai-crw
 
 No server to install. [Sign up at fastcrw.com](https://fastcrw.com) and get **500 free credits** to start scraping:
 
+```bash
+export CRW_API_KEY=crw_live_...  # get yours at fastcrw.com
+```
+
 ```python
 from crewai_crw import CrwScrapeWebsiteTool
 
-scrape_tool = CrwScrapeWebsiteTool(
-    api_url="https://fastcrw.com/api",
-    api_key="crw_live_...",  # get yours at fastcrw.com
-)
+# Cloud is the default — just set CRW_API_KEY and go
+scrape_tool = CrwScrapeWebsiteTool()
 ```
 
-**Tip:** Set environment variables so you don't repeat args every time:
+### Option B: Self-hosted with binary (free, no limits)
+
+Single binary, ~15 MB download, ~6 MB idle RAM. No Docker needed.
 
 ```bash
-export CRW_API_URL=https://fastcrw.com/api
-export CRW_API_KEY=crw_live_...
-```
-
-```python
-# With env vars set, no constructor args needed
-scrape_tool = CrwScrapeWebsiteTool()  # picks up from env automatically
-```
-
-### Option B: Self-hosted (free, no limits)
-
-Run CRW on your own machine. No API key, no account, unlimited scraping.
-
-```bash
-# Install CRW (single binary, ~6 MB)
 curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | bash
 crw  # starts on http://localhost:3000
-
-# Or use Docker
-docker run -p 3000:3000 ghcr.io/us/crw:latest
 ```
 
 ```python
 from crewai_crw import CrwScrapeWebsiteTool
 
-# No api_key needed — auto-connects to localhost:3000
-scrape_tool = CrwScrapeWebsiteTool()
+scrape_tool = CrwScrapeWebsiteTool(api_url="http://localhost:3000")
+```
+
+### Option C: Self-hosted with Docker
+
+```bash
+docker run -d -p 3000:3000 ghcr.io/us/crw:latest
+```
+
+```python
+scrape_tool = CrwScrapeWebsiteTool(api_url="http://localhost:3000")
 ```
 
 ## Tools
