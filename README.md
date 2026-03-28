@@ -20,7 +20,7 @@ uv add crewai crewai-crw
 
 ### Option A: Cloud ([fastcrw.com](https://fastcrw.com)) — Quickest Start
 
-No server to install. Get an API key from [fastcrw.com](https://fastcrw.com) and start scraping:
+No server to install. [Sign up at fastcrw.com](https://fastcrw.com) and get **500 free credits** to start scraping:
 
 ```python
 from crewai_crw import CrwScrapeWebsiteTool
