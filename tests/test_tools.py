@@ -378,7 +378,7 @@ def test_all_tools_instantiate():
 
     scrape = CrwScrapeWebsiteTool()
     assert scrape.name == "CRW web scrape tool"
-    assert scrape.api_url == "http://localhost:3000"
+    assert scrape.api_url == "https://fastcrw.com/api"
 
     crawl = CrwCrawlWebsiteTool()
     assert crawl.name == "CRW web crawl tool"
