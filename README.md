@@ -16,41 +16,40 @@ pip install crewai crewai-crw
 uv add crewai crewai-crw
 ```
 
-## Setup — Pick One
+That's it. No server to install, no `cargo install`, no Docker. The `crw` SDK automatically downloads and manages the CRW binary for you.
 
-### Option A: Cloud ([fastcrw.com](https://fastcrw.com)) — Quickest Start
-
-No server to install. [Sign up at fastcrw.com](https://fastcrw.com) and get **500 free credits** to start scraping:
-
-```bash
-export CRW_API_KEY=crw_live_...  # get yours at fastcrw.com
-```
+## Quick Start — Zero Config (Subprocess Mode)
 
 ```python
 from crewai_crw import CrwScrapeWebsiteTool
 
-# Cloud is the default — just set CRW_API_KEY and go
+# Just works — crw SDK handles everything locally
 scrape_tool = CrwScrapeWebsiteTool()
 ```
 
-### Option B: Self-hosted with binary (free, no limits)
+## Cloud Mode ([fastcrw.com](https://fastcrw.com))
 
-Single binary, ~15 MB download, ~6 MB idle RAM. No Docker needed.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | bash
-crw  # starts on http://localhost:3000
-```
+No local binary needed. [Sign up at fastcrw.com](https://fastcrw.com) and get **500 free credits**:
 
 ```python
 from crewai_crw import CrwScrapeWebsiteTool
 
-scrape_tool = CrwScrapeWebsiteTool(api_url="http://localhost:3000")
+scrape_tool = CrwScrapeWebsiteTool(
+    api_url="https://fastcrw.com/api",
+    api_key="crw_live_...",  # or set CRW_API_KEY env var
+)
 ```
 
-### Option C: Self-hosted with Docker
+## Advanced: Self-hosted Server
+
+If you prefer running a persistent CRW server (e.g., shared across services):
 
 ```bash
+# Option A: Install binary
+curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | bash
+crw  # starts on http://localhost:3000
+
+# Option B: Docker
 docker run -d -p 3000:3000 ghcr.io/us/crw:latest
 ```
 
@@ -66,14 +65,13 @@ scrape_tool = CrwScrapeWebsiteTool(api_url="http://localhost:3000")
 | `CrwCrawlWebsiteTool` | BFS crawl a website, collect content from multiple pages |
 | `CrwMapWebsiteTool` | Discover all URLs on a website |
 
-## Quick Start
+## CrewAI Example
 
 ```python
 from crewai import Agent, Task, Crew
 from crewai_crw import CrwScrapeWebsiteTool
 
-# Self-hosted: no args needed (connects to localhost:3000)
-# Cloud: CrwScrapeWebsiteTool(api_url="https://fastcrw.com/api", api_key="crw_live_...")
+# Zero config — just works out of the box
 scrape_tool = CrwScrapeWebsiteTool()
 
 researcher = Agent(
@@ -138,7 +136,7 @@ mapper = Agent(
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `api_url` | `str` | `http://localhost:3000` | CRW server URL |
+| `api_url` | `str \| None` | `None` | CRW server URL. If unset, uses subprocess mode (no server needed) |
 | `api_key` | `str \| None` | `None` | API key (required for fastcrw.com) |
 | `config` | `dict` | varies per tool | Tool-specific configuration |
 
@@ -188,8 +186,9 @@ tool = CrwScrapeWebsiteTool()
 | Feature | crewai-crw | Firecrawl Tools |
 |---------|-----------|-----------------|
 | Requires SDK package | No (uses `requests`) | Yes (`firecrawl-py`) |
-| Requires API key | No (self-hosted) | Yes (always) |
-| Self-hosted option | Yes (single binary) | Complex (5+ containers) |
+| Requires API key | No (subprocess or self-hosted) | Yes (always) |
+| Server required | No (`pip install` is all you need) | Yes (always) |
+| Self-hosted option | Yes (single binary, auto-managed) | Complex (5+ containers) |
 | Cloud option | Yes (fastcrw.com) | Yes (firecrawl.dev) |
 | Idle RAM | ~6 MB | ~500 MB+ |
 

@@ -6,13 +6,20 @@ Self-hosted (free) or managed cloud at https://fastcrw.com.
 
 from __future__ import annotations
 
-import os
-import time
 from typing import Any
 
-import requests as http_requests
-from crewai.tools import BaseTool, EnvVar
+from crewai.tools import BaseTool
+from crw import CrwClient
 from pydantic import BaseModel, ConfigDict, Field
+
+
+def _make_client(api_url: str | None, api_key: str | None) -> CrwClient:
+    """Create a CrwClient instance.
+
+    If api_url is None the SDK spawns crw-mcp as a subprocess (no server needed).
+    If api_url is given it uses HTTP mode.
+    """
+    return CrwClient(api_url=api_url, api_key=api_key)
 
 
 # --- Scrape Tool ---
@@ -29,7 +36,7 @@ class CrwScrapeWebsiteTool(BaseTool):
     self-hosted (free) or via the managed cloud at fastcrw.com.
 
     Args:
-        api_url: CRW server URL. Default: http://localhost:3000
+        api_url: CRW server URL. If None, spawns crw-mcp binary locally.
         api_key: Optional API key (required for fastcrw.com cloud).
         config: Scrape configuration options.
 
@@ -58,7 +65,7 @@ class CrwScrapeWebsiteTool(BaseTool):
         "CRW is a fast, open-source web scraper with JS rendering support."
     )
     args_schema: type[BaseModel] = CrwScrapeWebsiteToolSchema
-    api_url: str = "https://fastcrw.com/api"
+    api_url: str | None = None
     api_key: str | None = None
     config: dict[str, Any] = Field(
         default_factory=lambda: {
@@ -66,22 +73,7 @@ class CrwScrapeWebsiteTool(BaseTool):
             "onlyMainContent": True,
         }
     )
-
-    env_vars: list[EnvVar] = Field(
-        default_factory=lambda: [
-            EnvVar(
-                name="CRW_API_URL",
-                description="CRW server URL (default: https://fastcrw.com/api)",
-                required=False,
-                default="http://localhost:3000",
-            ),
-            EnvVar(
-                name="CRW_API_KEY",
-                description="API key for CRW (required for fastcrw.com cloud)",
-                required=False,
-            ),
-        ]
-    )
+    _client: CrwClient | None = None
 
     def __init__(
         self,
@@ -90,41 +82,37 @@ class CrwScrapeWebsiteTool(BaseTool):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.api_url = api_url or os.getenv("CRW_API_URL", "https://fastcrw.com/api")
-        self.api_key = api_key or os.getenv("CRW_API_KEY")
+        self.api_url = api_url
+        self.api_key = api_key
+        self._client = _make_client(api_url, api_key)
 
     def _run(self, url: str) -> Any:
-        headers: dict[str, str] = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
+        formats = self.config.get("formats")
+        only_main_content = self.config.get("onlyMainContent", True)
 
-        payload = {"url": url, **self.config}
+        # Pass remaining config keys as extra kwargs
+        extra: dict[str, Any] = {
+            k: v
+            for k, v in self.config.items()
+            if k not in ("formats", "onlyMainContent")
+        }
 
-        response = http_requests.post(
-            f"{self.api_url.rstrip('/')}/v1/scrape",
-            json=payload,
-            headers=headers,
-            timeout=120,
+        result = self._client.scrape(
+            url,
+            formats=formats,
+            only_main_content=only_main_content,
+            **extra,
         )
-        response.raise_for_status()
-        result = response.json()
 
-        if not result.get("success"):
-            raise RuntimeError(
-                f"CRW scrape failed: {result.get('error', 'Unknown error')}"
-            )
-
-        data = result["data"]
-
-        if data.get("markdown"):
-            return data["markdown"]
-        if data.get("plainText"):
-            return data["plainText"]
-        if data.get("html"):
-            return data["html"]
-        if data.get("json"):
-            return data["json"]
-        return data
+        if result.get("markdown"):
+            return result["markdown"]
+        if result.get("plainText"):
+            return result["plainText"]
+        if result.get("html"):
+            return result["html"]
+        if result.get("json"):
+            return result["json"]
+        return result
 
 
 # --- Crawl Tool ---
@@ -141,7 +129,7 @@ class CrwCrawlWebsiteTool(BaseTool):
     and sitemap support. Runs self-hosted (free) or via fastcrw.com cloud.
 
     Args:
-        api_url: CRW server URL. Default: http://localhost:3000
+        api_url: CRW server URL. If None, spawns crw-mcp binary locally.
         api_key: Optional API key (required for fastcrw.com cloud).
         config: Crawl configuration options.
         poll_interval: Seconds between status checks. Default: 2
@@ -163,7 +151,7 @@ class CrwCrawlWebsiteTool(BaseTool):
         "Useful for gathering information across an entire site."
     )
     args_schema: type[BaseModel] = CrwCrawlWebsiteToolSchema
-    api_url: str = "https://fastcrw.com/api"
+    api_url: str | None = None
     api_key: str | None = None
     poll_interval: int = 2
     max_wait: int = 300
@@ -175,22 +163,7 @@ class CrwCrawlWebsiteTool(BaseTool):
             "onlyMainContent": True,
         }
     )
-
-    env_vars: list[EnvVar] = Field(
-        default_factory=lambda: [
-            EnvVar(
-                name="CRW_API_URL",
-                description="CRW server URL (default: https://fastcrw.com/api)",
-                required=False,
-                default="http://localhost:3000",
-            ),
-            EnvVar(
-                name="CRW_API_KEY",
-                description="API key for CRW (required for fastcrw.com cloud)",
-                required=False,
-            ),
-        ]
-    )
+    _client: CrwClient | None = None
 
     def __init__(
         self,
@@ -199,65 +172,37 @@ class CrwCrawlWebsiteTool(BaseTool):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.api_url = api_url or os.getenv("CRW_API_URL", "https://fastcrw.com/api")
-        self.api_key = api_key or os.getenv("CRW_API_KEY")
-
-    def _get_headers(self) -> dict[str, str]:
-        headers: dict[str, str] = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
-        return headers
+        self.api_url = api_url
+        self.api_key = api_key
+        self._client = _make_client(api_url, api_key)
 
     def _run(self, url: str) -> Any:
-        headers = self._get_headers()
-        base = self.api_url.rstrip("/")
+        max_depth = self.config.get("maxDepth", 2)
+        max_pages = self.config.get("maxPages", 10)
 
-        payload = {"url": url, **self.config}
-        response = http_requests.post(
-            f"{base}/v1/crawl",
-            json=payload,
-            headers=headers,
-            timeout=30,
+        # Pass remaining config keys as extra kwargs
+        extra: dict[str, Any] = {
+            k: v
+            for k, v in self.config.items()
+            if k not in ("maxDepth", "maxPages")
+        }
+
+        pages = self._client.crawl(
+            url,
+            max_depth=max_depth,
+            max_pages=max_pages,
+            poll_interval=float(self.poll_interval),
+            timeout=float(self.max_wait),
+            **extra,
         )
-        response.raise_for_status()
-        result = response.json()
 
-        if not result.get("success"):
-            raise RuntimeError(
-                f"CRW crawl start failed: {result.get('error', 'Unknown error')}"
-            )
-
-        job_id = result["id"]
-
-        elapsed = 0
-        while elapsed < self.max_wait:
-            time.sleep(self.poll_interval)
-            elapsed += self.poll_interval
-
-            status_resp = http_requests.get(
-                f"{base}/v1/crawl/{job_id}",
-                headers=headers,
-                timeout=30,
-            )
-            status_resp.raise_for_status()
-            status_data = status_resp.json()
-
-            if status_data["status"] == "completed":
-                pages = status_data.get("data", [])
-                combined = []
-                for page in pages:
-                    source = page.get("metadata", {}).get("sourceURL", "unknown")
-                    content = page.get("markdown", "")
-                    if content:
-                        combined.append(f"## Source: {source}\n\n{content}")
-                return "\n\n---\n\n".join(combined) if combined else "No content found."
-
-            if status_data["status"] == "failed":
-                raise RuntimeError("CRW crawl job failed")
-
-        raise TimeoutError(
-            f"CRW crawl did not complete within {self.max_wait} seconds"
-        )
+        combined = []
+        for page in pages:
+            source = page.get("metadata", {}).get("sourceURL", "unknown")
+            content = page.get("markdown", "")
+            if content:
+                combined.append(f"## Source: {source}\n\n{content}")
+        return "\n\n---\n\n".join(combined) if combined else "No content found."
 
 
 # --- Map Tool ---
@@ -274,7 +219,7 @@ class CrwMapWebsiteTool(BaseTool):
     Uses sitemap.xml and link discovery to find all pages.
 
     Args:
-        api_url: CRW server URL. Default: http://localhost:3000
+        api_url: CRW server URL. If None, spawns crw-mcp binary locally.
         api_key: Optional API key (required for fastcrw.com cloud).
         config: Map configuration options.
 
@@ -292,7 +237,7 @@ class CrwMapWebsiteTool(BaseTool):
         "before scraping specific pages."
     )
     args_schema: type[BaseModel] = CrwMapWebsiteToolSchema
-    api_url: str = "https://fastcrw.com/api"
+    api_url: str | None = None
     api_key: str | None = None
     config: dict[str, Any] = Field(
         default_factory=lambda: {
@@ -300,22 +245,7 @@ class CrwMapWebsiteTool(BaseTool):
             "useSitemap": True,
         }
     )
-
-    env_vars: list[EnvVar] = Field(
-        default_factory=lambda: [
-            EnvVar(
-                name="CRW_API_URL",
-                description="CRW server URL (default: https://fastcrw.com/api)",
-                required=False,
-                default="http://localhost:3000",
-            ),
-            EnvVar(
-                name="CRW_API_KEY",
-                description="API key for CRW (required for fastcrw.com cloud)",
-                required=False,
-            ),
-        ]
-    )
+    _client: CrwClient | None = None
 
     def __init__(
         self,
@@ -324,29 +254,26 @@ class CrwMapWebsiteTool(BaseTool):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.api_url = api_url or os.getenv("CRW_API_URL", "https://fastcrw.com/api")
-        self.api_key = api_key or os.getenv("CRW_API_KEY")
+        self.api_url = api_url
+        self.api_key = api_key
+        self._client = _make_client(api_url, api_key)
 
     def _run(self, url: str) -> Any:
-        headers: dict[str, str] = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
+        max_depth = self.config.get("maxDepth", 2)
+        use_sitemap = self.config.get("useSitemap", True)
 
-        payload = {"url": url, **self.config}
+        # Pass remaining config keys as extra kwargs
+        extra: dict[str, Any] = {
+            k: v
+            for k, v in self.config.items()
+            if k not in ("maxDepth", "useSitemap")
+        }
 
-        response = http_requests.post(
-            f"{self.api_url.rstrip('/')}/v1/map",
-            json=payload,
-            headers=headers,
-            timeout=60,
+        links = self._client.map(
+            url,
+            max_depth=max_depth,
+            use_sitemap=use_sitemap,
+            **extra,
         )
-        response.raise_for_status()
-        result = response.json()
 
-        if not result.get("success"):
-            raise RuntimeError(
-                f"CRW map failed: {result.get('error', 'Unknown error')}"
-            )
-
-        links = result.get("data", {}).get("links", [])
         return "\n".join(links) if links else "No links discovered."
