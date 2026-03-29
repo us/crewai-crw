@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/us/crewai-crw/compare/v0.2.0...v0.3.0) (2026-03-29)
+
+
+### Features
+
+* use crw SDK with auto-download binary, no server required ([bfd693a](https://github.com/us/crewai-crw/commit/bfd693ab71798fc3a3ce31eb7c36a1ebf4101a43))
+
+
+### Bug Fixes
+
+* update test to expect fastcrw.com default ([dabac91](https://github.com/us/crewai-crw/commit/dabac91429d4ff6881fbe5c0080ff3a76c15f785))
+
 ## [0.2.0](https://github.com/us/crewai-crw/compare/v0.1.0...v0.2.0) (2026-03-28)
 
 
