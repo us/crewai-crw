@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/us/crewai-crw/compare/v0.3.0...v0.4.0) (2026-04-02)
+
+
+### Features
+
+* add CrwSearchWebTool for web search ([fb2c257](https://github.com/us/crewai-crw/commit/fb2c2570ec011b95d4bc4585c91b11438f028960))
+
 ## [0.3.0](https://github.com/us/crewai-crw/compare/v0.2.0...v0.3.0) (2026-03-29)
 
 
