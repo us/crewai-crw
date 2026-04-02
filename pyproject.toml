@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crewai-crw"
-version = "0.3.0"
+version = "0.4.0"
 description = "CRW web scraping tools for CrewAI — scrape, crawl, and map websites"
 readme = "README.md"
 license = "MIT"
@@ -24,7 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "crewai>=0.100.0",
-    "crw>=0.2.1",
+    "crw>=0.2.2",
 ]
 
 [project.urls]

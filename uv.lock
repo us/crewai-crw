@@ -557,17 +557,29 @@ wheels = [
 
 [[package]]
 name = "crewai-crw"
-version = "0.1.0"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "crewai" },
-    { name = "requests" },
+    { name = "crw" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "crewai", specifier = ">=0.100.0" },
-    { name = "requests", specifier = ">=2.28.0" },
+    { name = "crw", specifier = ">=0.2.2" },
+]
+
+[[package]]
+name = "crw"
+version = "0.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "platformdirs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a4/f1/9f4b69fe35d00fb22bbc7c5886c621c1463b93f843a5de1c2f032cb5e0a8/crw-0.2.2.tar.gz", hash = "sha256:52a629bc1d22274bb63a51945fa889ec7b14dc4b6261eadf9e5c0e6edc717e9d", size = 5997, upload-time = "2026-04-02T01:00:31.511Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/49/9c578576d9e4d0cc60e3c7786851ac28c2ea62f37ae025b598277fd0aa24/crw-0.2.2-py3-none-any.whl", hash = "sha256:5a4ab56002eabfd8bf1936933fb41fad9d37843e9855411d64ef6792291c7a84", size = 7915, upload-time = "2026-04-02T01:00:30.457Z" },
 ]
 
 [[package]]

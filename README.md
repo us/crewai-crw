@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/crewai-crw)](https://pypi.org/project/crewai-crw/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scrape, crawl, and map websites with AI agents.
+CRW web scraping tools for [CrewAI](https://github.com/crewAIInc/crewAI) — scrape, crawl, map, and search the web with AI agents.
 
 [CRW](https://github.com/us/crw) is an open-source web scraper built for AI agents. Single Rust binary, ~6 MB idle RAM, Firecrawl-compatible API.
 
@@ -64,6 +64,7 @@ scrape_tool = CrwScrapeWebsiteTool(api_url="http://localhost:3000")
 | `CrwScrapeWebsiteTool` | Scrape a single URL and get clean markdown |
 | `CrwCrawlWebsiteTool` | BFS crawl a website, collect content from multiple pages |
 | `CrwMapWebsiteTool` | Discover all URLs on a website |
+| `CrwSearchWebTool` | Search the web and get results (cloud only) |
 
 ## CrewAI Example
 
@@ -130,6 +131,27 @@ mapper = Agent(
 )
 ```
 
+### Search the web (Cloud Only)
+
+> **Note:** Web search is a cloud-only feature. It requires `api_url` pointing to a CRW cloud instance (e.g. fastcrw.com). Subprocess mode is not supported for search.
+
+```python
+from crewai_crw import CrwSearchWebTool
+
+search_tool = CrwSearchWebTool(
+    api_url="https://fastcrw.com/api",
+    api_key="YOUR_KEY",
+)
+
+# Use in an agent
+researcher = Agent(
+    role="Web Researcher",
+    goal="Find the latest information on any topic",
+    backstory="Expert at searching the web for relevant information",
+    tools=[search_tool],
+)
+```
+
 ## Configuration
 
 ### Constructor Arguments
@@ -180,6 +202,12 @@ tool = CrwScrapeWebsiteTool()
 |-----|------|---------|-------------|
 | `maxDepth` | `int` | `2` | Maximum discovery depth |
 | `useSitemap` | `bool` | `true` | Also read sitemap.xml |
+
+### Search Config (Cloud Only)
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `limit` | `int` | `5` | Maximum number of results to return |
 
 ## Compared to Firecrawl Tools
 

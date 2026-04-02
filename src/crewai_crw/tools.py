@@ -277,3 +277,64 @@ class CrwMapWebsiteTool(BaseTool):
         )
 
         return "\n".join(links) if links else "No links discovered."
+
+
+# --- Search Tool ---
+
+
+class CrwSearchWebToolSchema(BaseModel):
+    query: str = Field(description="Search query to find web content")
+
+
+class CrwSearchWebTool(BaseTool):
+    """Search the web using CRW. Cloud-only feature — requires api_url."""
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, validate_assignment=True, frozen=False
+    )
+
+    name: str = "CRW web search tool"
+    description: str = (
+        "Search the web using CRW and return relevant results with titles, "
+        "descriptions, and optionally scraped content. Cloud-only feature — "
+        "requires api_url (e.g. https://fastcrw.com/api)."
+    )
+    args_schema: type[BaseModel] = CrwSearchWebToolSchema
+    api_url: str | None = None
+    api_key: str | None = None
+    config: dict[str, Any] = Field(default_factory=lambda: {"limit": 5})
+    _client: CrwClient | None = None
+
+    def __init__(
+        self,
+        api_url: str | None = None,
+        api_key: str | None = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.api_url = api_url
+        self.api_key = api_key
+        self._client = _make_client(api_url, api_key)
+
+    def _run(self, query: str) -> Any:
+        limit = self.config.get("limit", 5)
+        extra: dict[str, Any] = {
+            k: v for k, v in self.config.items() if k != "limit"
+        }
+
+        results = self._client.search(query, limit=limit, **extra)
+
+        if isinstance(results, list):
+            formatted = []
+            for r in results:
+                title = r.get("title", "")
+                url = r.get("url", "")
+                desc = r.get("description", "")
+                content = r.get("markdown", "")
+                entry = f"## {title}\nURL: {url}\n{desc}"
+                if content:
+                    entry += f"\n\n{content}"
+                formatted.append(entry)
+            return "\n\n---\n\n".join(formatted) if formatted else "No results found."
+
+        return str(results)
