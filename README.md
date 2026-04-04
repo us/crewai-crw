@@ -46,7 +46,7 @@ If you prefer running a persistent CRW server (e.g., shared across services):
 
 ```bash
 # Option A: Install binary
-curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/us/crw/main/install.sh | sh
 crw  # starts on http://localhost:3000
 
 # Option B: Docker
@@ -164,7 +164,7 @@ researcher = Agent(
 
 ### Environment Variables
 
-Both `CRW_API_URL` and `CRW_API_KEY` can be set via environment variables as fallbacks:
+Pass `api_url` and `api_key` explicitly when creating tools:
 
 ```bash
 export CRW_API_URL=https://fastcrw.com/api  # or http://localhost:3000
@@ -172,8 +172,12 @@ export CRW_API_KEY=your_api_key              # required for cloud, optional for 
 ```
 
 ```python
-# With env vars set, no constructor args needed:
-tool = CrwScrapeWebsiteTool()
+import os
+
+tool = CrwScrapeWebsiteTool(
+    api_url=os.getenv("CRW_API_URL"),
+    api_key=os.getenv("CRW_API_KEY"),
+)
 ```
 
 ### Scrape Config
@@ -213,7 +217,7 @@ tool = CrwScrapeWebsiteTool()
 
 | Feature | crewai-crw | Firecrawl Tools |
 |---------|-----------|-----------------|
-| Requires SDK package | No (uses `requests`) | Yes (`firecrawl-py`) |
+| Requires SDK package | No (uses `crw` SDK, auto-manages binary) | Yes (`firecrawl-py`) |
 | Requires API key | No (subprocess or self-hosted) | Yes (always) |
 | Server required | No (`pip install` is all you need) | Yes (always) |
 | Self-hosted option | Yes (single binary, auto-managed) | Complex (5+ containers) |
