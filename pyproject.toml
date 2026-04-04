@@ -38,3 +38,4 @@ packages = ["src/crewai_crw"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: tests that hit the real fastcrw.com API (require CRW_API_KEY)"]

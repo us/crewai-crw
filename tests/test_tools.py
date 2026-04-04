@@ -299,7 +299,12 @@ def test_search_returns_formatted_results(mock_make_client):
 
     mock_client = MagicMock()
     mock_client.search.return_value = [
-        {"title": "Result 1", "url": "https://example.com/1", "description": "First result"},
+        {
+            "title": "Result 1",
+            "url": "https://example.com/1",
+            "description": "First result",
+            "markdown": "# Page One\n\nDetailed content here.",
+        },
         {"title": "Result 2", "url": "https://example.com/2", "description": "Second result"},
     ]
     mock_make_client.return_value = mock_client
@@ -310,6 +315,63 @@ def test_search_returns_formatted_results(mock_make_client):
     assert "Result 1" in result
     assert "Result 2" in result
     assert "---" in result
+    # Verify page content from markdown field is included
+    assert "# Page One" in result
+    assert "Detailed content here." in result
+
+
+@patch("crewai_crw.tools._make_client")
+def test_search_empty_results(mock_make_client):
+    """Search returning an empty list should produce a 'No results found.' message."""
+    from crewai_crw import CrwSearchWebTool
+
+    mock_client = MagicMock()
+    mock_client.search.return_value = []
+    mock_make_client.return_value = mock_client
+
+    tool = CrwSearchWebTool(api_url="https://fastcrw.com/api", api_key="key")
+    result = tool._run(query="nonexistent topic")
+
+    assert result == "No results found."
+    mock_client.search.assert_called_once()
+
+
+# --- Crawl: pages with empty markdown ---
+
+
+@patch("crewai_crw.tools._make_client")
+def test_crawl_pages_with_no_content(mock_make_client):
+    """Crawl returning pages where all have empty markdown should yield 'No content found.'."""
+    from crewai_crw import CrwCrawlWebsiteTool
+
+    mock_client = MagicMock()
+    mock_client.crawl.return_value = [
+        {"markdown": "", "metadata": {"sourceURL": "https://example.com/a"}},
+        {"markdown": "", "metadata": {"sourceURL": "https://example.com/b"}},
+    ]
+    mock_make_client.return_value = mock_client
+
+    tool = CrwCrawlWebsiteTool()
+    result = tool._run(url="https://example.com")
+
+    assert result == "No content found."
+
+
+# --- Client close assertion ---
+
+
+@patch("crewai_crw.tools._make_client")
+def test_client_close(mock_make_client):
+    """Verify we can call close() on the underlying client."""
+    from crewai_crw import CrwScrapeWebsiteTool
+
+    mock_client = MagicMock()
+    mock_make_client.return_value = mock_client
+
+    tool = CrwScrapeWebsiteTool()
+    tool._client.close()
+
+    mock_client.close.assert_called_once()
 
 
 # --- Instantiation Tests ---
@@ -318,7 +380,12 @@ def test_search_returns_formatted_results(mock_make_client):
 @patch("crewai_crw.tools._make_client")
 def test_all_tools_instantiate(mock_make_client):
     """Verify all tools can be instantiated with defaults."""
-    from crewai_crw import CrwScrapeWebsiteTool, CrwCrawlWebsiteTool, CrwMapWebsiteTool
+    from crewai_crw import (
+        CrwScrapeWebsiteTool,
+        CrwCrawlWebsiteTool,
+        CrwMapWebsiteTool,
+        CrwSearchWebTool,
+    )
 
     mock_make_client.return_value = MagicMock()
 
@@ -333,6 +400,10 @@ def test_all_tools_instantiate(mock_make_client):
 
     map_tool = CrwMapWebsiteTool()
     assert map_tool.name == "CRW website map tool"
+
+    search = CrwSearchWebTool()
+    assert search.name == "CRW web search tool"
+    assert search.api_url is None
 
 
 @patch("crewai_crw.tools._make_client")
