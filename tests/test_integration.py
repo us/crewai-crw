@@ -31,7 +31,6 @@ def test_scrape_real_url():
     assert len(result) > 0
 
 
-@pytest.mark.xfail(reason="crw client crawl polling has a known bug with list response")
 def test_crawl_real_url():
     from crewai_crw import CrwCrawlWebsiteTool
 
@@ -59,7 +58,6 @@ def test_map_real_url():
     assert "http" in result
 
 
-@pytest.mark.skip(reason="CrwClient does not yet expose a search() method")
 def test_search_real_query():
     from crewai_crw import CrwSearchWebTool
 
