@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/us/crewai-crw/compare/v0.4.0...v0.5.0) (2026-04-09)
+
+
+### Features
+
+* add integration tests and CI for fastcrw.com ([#7](https://github.com/us/crewai-crw/issues/7)) ([0027561](https://github.com/us/crewai-crw/commit/0027561bd7b8a3a430308feb70660f743f7c2b25))
+
+
+### Bug Fixes
+
+* bump crw&gt;=0.3.4, enable search and crawl integration tests ([3e4d3e5](https://github.com/us/crewai-crw/commit/3e4d3e5709dfdd047d0e99018c8e50390c5a5dce))
+* **ci:** remove --timeout flag from integration test command ([#9](https://github.com/us/crewai-crw/issues/9)) ([9cab5c1](https://github.com/us/crewai-crw/commit/9cab5c16674299717535ba20524f5397a9d3eee1))
+
 ## [0.4.0](https://github.com/us/crewai-crw/compare/v0.3.0...v0.4.0) (2026-04-02)
 
 
